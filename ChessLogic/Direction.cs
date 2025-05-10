@@ -11,9 +11,6 @@
         public readonly static Direction SouthEast = South + East;
         public readonly static Direction SouthWest = South + West;
 
-
-
-
         public int RowDelta { get; }
         public int ColumnDelta { get; }
 
