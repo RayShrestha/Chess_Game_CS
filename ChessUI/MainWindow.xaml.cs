@@ -19,7 +19,7 @@ public partial class MainWindow : Window
 
 
     private GameState gameState;
-    private Position SelectedPos = null;
+    private Position selectedPos = null;
     public MainWindow()
     {
         InitializeComponent();
@@ -67,7 +67,7 @@ public partial class MainWindow : Window
         Point point = e.GetPosition(BoardGrid);
         Position pos = ToSquarePosition(point);
 
-        if (SelectedPos == null)
+        if (selectedPos == null)
         {
             OnFromPositionSelected(pos);
         }
@@ -88,7 +88,7 @@ public partial class MainWindow : Window
         IEnumerable<Move> moves = gameState.LegalMovesForPieces(pos);
         if (moves.Any())
         {
-            SelectedPos = pos;
+            selectedPos = pos;
             CacheMoves(moves);
             ShowHighLights();
         }
@@ -97,7 +97,7 @@ public partial class MainWindow : Window
     private void OnToPositionSelected(Position pos)
     {
         {
-            SelectedPos = null;          
+            selectedPos = null;          
             HideHighlights();
             if (moveCache.TryGetValue(pos, out Move move))
             {
@@ -118,7 +118,7 @@ public partial class MainWindow : Window
         pieceImages[to.Row, to.Column].Source = Images.GetImage(gameState.CurrentPlayer, PieceType.Pawn);
         pieceImages[from.Row, from.Column].Source = null;
 
-        PromotionMenu promMenu = new PromotionMenu(gameState.CurrentPlayer);
+        PromotionMenu promMenu = new(gameState.CurrentPlayer);
         MenuContainer.Content = promMenu;
 
         promMenu.PieceSelected += type =>
@@ -202,10 +202,35 @@ public partial class MainWindow : Window
 
     private void RestartGame()
     {
+        selectedPos = null;
         HideHighlights();
         moveCache.Clear();
         gameState = new GameState(Player.White, Board.Initial());
         DrawBoard(gameState.Board);
         SetCursor(gameState.CurrentPlayer);
+    }
+
+    private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if(!IsMenuOnScreen() && e.Key == System.Windows.Input.Key.Escape)
+        {
+            ShowPauseMenu();
+        }
+    }
+
+    private void ShowPauseMenu()
+    {
+        PauseMenu pauseMenu = new();
+        MenuContainer.Content = pauseMenu;
+
+        pauseMenu.OptionSelected += option =>
+        {
+            MenuContainer.Content = null;
+
+            if (option == Option.Restart)
+            {
+                RestartGame();
+            }
+        };
     }
 }

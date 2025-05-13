@@ -5,6 +5,12 @@ namespace ChessLogic
     public class Board
     {
         private readonly Piece[,] pieces = new Piece[8, 8];
+        //private readonly Dictionary<Player, Position> pawnSkipPosition = new Dictionary<Player, Position>
+        private readonly Dictionary<Player, Position> pawnSkipPosition = new()
+        {
+            {Player.White, null },
+            {Player.Black, null }
+        };
         public Piece this[int row, int col]
         {
             get { return pieces [row, col]; }
@@ -14,6 +20,16 @@ namespace ChessLogic
         {
             get { return this[pos.Row, pos.Column]; }
             set { pieces[pos.Row, pos.Column] = value; }
+        }
+
+        public Position GetPawnSkipPosition(Player player)
+        {
+            return pawnSkipPosition[player];
+        }
+
+        public void SetPawnSkipPosition(Player player, Position pos)
+        {
+            pawnSkipPosition[player] = pos;
         }
         public static Board Initial()
         {
@@ -97,5 +113,63 @@ namespace ChessLogic
             return copy;
         }
 
+        public Counting CountPieces()
+        {
+            Counting counting = new();
+
+            foreach(Position pos in PiecePositions())
+            {
+                Piece piece = this[pos];
+                counting.Increment(piece.Color, piece.Type);
+            }
+
+            return counting;
+        }
+
+        public bool InsufficientMaterial()
+        {
+            Counting counting = CountPieces();
+
+            return IsKingKnightVKing(counting) || IsKingBishopVKing(counting) ||
+                   IsKingVKing(counting) || IsKingBishopVKingBishop(counting);
+        }
+
+        private static bool IsKingVKing(Counting counting)
+        {
+            return counting.TotalCount == 2;
+        }
+
+        private static bool IsKingBishopVKing(Counting counting)
+        {
+            return counting.TotalCount == 3 && (counting.White(PieceType.Bishop) == 1 || (counting.Black(PieceType.Bishop) == 1));
+        }
+
+        private static bool IsKingKnightVKing(Counting counting)
+        {
+            return counting.TotalCount == 3 && (counting.White(PieceType.Knight) == 1 || (counting.Black(PieceType.Knight) == 1));
+        }
+
+        private bool IsKingBishopVKingBishop(Counting counting)
+        {
+            if (counting.TotalCount != 4)
+            {
+                return false;
+            }
+
+            if(counting.White(PieceType.Bishop) !=1 || counting.Black(PieceType.Bishop) != 1)
+            {
+                return false;
+            }
+
+            Position wBishopPos = FindPiece(Player.White, PieceType.Bishop);
+            Position bBishopPos = FindPiece(Player.Black, PieceType.Bishop);
+
+            return wBishopPos.SquareColor() == bBishopPos.SquareColor();
+        }
+
+        private Position FindPiece(Player color, PieceType type)
+        {
+            return PiecePositionsFor(color).First(pos => this[pos].Type == type);
+        }
     }
 }

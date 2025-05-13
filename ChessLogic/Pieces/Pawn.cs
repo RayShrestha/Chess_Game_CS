@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChessLogic
+﻿namespace ChessLogic
 {
     public class Pawn : Piece
     {
         public override PieceType Type => PieceType.Pawn;
         public override Player Color { get; }
+
         private readonly Direction forward;
         public Pawn(Player color)
         {
@@ -72,7 +67,7 @@ namespace ChessLogic
 
                 if (!HasMoved && CanMoveTo(twoMovePos, board))
                 {
-                    yield return new NormalMove(from, twoMovePos);
+                    yield return new DoublePawn(from, twoMovePos);
                 }
             }
         }
@@ -81,8 +76,12 @@ namespace ChessLogic
             foreach (Direction dir in new Direction[] { Direction.West, Direction.East })
             {
                 Position to = from + forward + dir;
+                if(to == board.GetPawnSkipPosition(Color.Opponent()))
+                {
+                    yield return new EnPassant(from, to);
+                }
                 
-                if (CanCaptureAt(to, board))
+                else if (CanCaptureAt(to, board))
                 {
                     if (to.Row == 0 || to.Row == 7)
                     {

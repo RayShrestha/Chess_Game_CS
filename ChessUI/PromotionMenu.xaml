@@ -13,7 +13,7 @@
         <Grid RenderOptions.BitmapScalingMode="HighQuality">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="0.5*"/>
+                <RowDefinition Height="1.5*"/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="SELECT A PIECE"
